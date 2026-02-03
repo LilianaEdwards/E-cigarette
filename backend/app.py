@@ -173,4 +173,6 @@ def update_order_status(oid):
 # -------------------------
 if __name__ == "__main__":
     print("🔥 Vape backend running at http://127.0.0.1:5000")
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
+
