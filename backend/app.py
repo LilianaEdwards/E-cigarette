@@ -163,8 +163,19 @@ def get_orders():
 @app.route("/orders", methods=["POST"])
 def orders():
     data = request.json
-    # insert into database
-    return jsonify({"message": "Order placed successfully"})
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO orders (name, address, items, total) VALUES (?, ?, ?, ?)",
+            (data.get("name"), data.get("address"), str(data.get("items")), data.get("total"))
+        )
+        conn.commit()
+        conn.close()
+        return jsonify({"message": "Order placed successfully!"})
+    except Exception as e:
+        print("ERROR in /orders:", e)
+        return jsonify({"message": "Failed to place order"}), 500
     
 @app.route("/order/status/<int:oid>", methods=["POST"])
 def update_order_status(oid):
@@ -182,6 +193,7 @@ def update_order_status(oid):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
