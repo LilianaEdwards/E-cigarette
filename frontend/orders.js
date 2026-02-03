@@ -27,6 +27,7 @@ async function renderOrders() {
 
   } catch(err){ console.error(err); }
 }
-
+window.onload = renderOrders;
 
 document.addEventListener("DOMContentLoaded", renderOrders);
+
