@@ -38,7 +38,7 @@ async function renderProducts() {
 // Add product to cart (backend)
 async function addToCart(productId) {
   try {
-    const res = await fetch(`${API}/products`);
+    const res = await fetch(`/products`);
     const products = await res.json();
     const product = products.find(p => p.id === productId);
 
@@ -47,7 +47,7 @@ async function addToCart(productId) {
       return;
     }
 
-    await fetch(`${API}/cart/add`, {
+    await fetch(`/cart/add`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: product.id, name: product.name, price: product.price, qty: 1 })
@@ -58,4 +58,5 @@ async function addToCart(productId) {
     console.error(err);
     alert("Failed to add to cart");
   }
+
 }
