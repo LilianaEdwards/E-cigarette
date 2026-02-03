@@ -109,7 +109,7 @@ def checkout():
 def get_orders():
     return jsonify(ORDERS)
 
-@app.route("/order/status/<int:oid>", methods=["POST"])
+@app.route("/orders/status/<int:oid>", methods=["POST"])
 def update_order_status(oid):
     data = request.get_json()
     order = next((o for o in ORDERS if o["id"]==oid), None)
@@ -125,3 +125,4 @@ def update_order_status(oid):
 # -------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
+
