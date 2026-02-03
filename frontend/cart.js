@@ -40,28 +40,32 @@ async function removeFromCart(id){
 }
 
 async function checkout(){
-  // Make sure to send any necessary order info
-  const orderData = {
-    // Replace with actual fields you already have in your cart system
-    name: document.getElementById("name")?.value || "Guest",
-    address: document.getElementById("address")?.value || "N/A",
-    items: cartItems,  // your existing cartItems array
-    total: cartTotal   // your existing cart total
-  };
+  // ✅ Get cart data EXACTLY how your app already stores it
+  const items = JSON.parse(localStorage.getItem("cart")) || [];
+  const total = items.reduce((sum, item) => sum + item.price * item.qty, 0);
 
-  const res = await fetch(`/orders`, { method: "POST" });
+  const res = await fetch(`/orders`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      items: items,
+      total: total
+    })
+  });
+
   const result = await res.json();
 
-  if (result.message) {
-  alert("Order placed successfully!");
-  renderCart();
-} else {
-  alert(result.message || "Checkout failed");
+  if(result.message){
+    alert("Order placed successfully!");
+    localStorage.removeItem("cart"); // clear cart AFTER success
+    renderCart();
+  } else {
+    alert(result.message || "Checkout failed");
+  }
 }
-}
-
 
 document.addEventListener("DOMContentLoaded", renderCart);
+
 
 
 
