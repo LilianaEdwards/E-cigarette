@@ -170,8 +170,8 @@ def orders():
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO orders (name, address, items, total) VALUES (?, ?, ?, ?)",
-            (data.get("name"), data.get("address"), str(data.get("items")), data.get("total"))
+            "INSERT INTO orders (id, date, items, total, status) VALUES (?, ?, ?, ?)",
+            (data.get("id"), data.get("date"), str(data.get("items")), data.get("total"), data.get("status"))
         )
         conn.commit()
         conn.close()
@@ -196,6 +196,7 @@ def update_order_status(oid):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
