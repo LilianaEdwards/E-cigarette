@@ -48,10 +48,9 @@ async function checkout(){
   } else {
     alert(result.message);
   }
-  .then(res => res.json())
-.then(data => console.log(data));
 }
 
 
 document.addEventListener("DOMContentLoaded", renderCart);
+
 
