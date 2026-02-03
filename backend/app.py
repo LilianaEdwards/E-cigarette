@@ -29,6 +29,12 @@ def get_db_connection():
 # -------------------
 # Frontend routes
 # -------------------
+
+# Serve static files (CSS, JS, images)
+@app.route("/static/<path:filename>")
+def static_files(filename):
+    return send_from_directory(FRONTEND_DIR, filename)
+    
 @app.route("/")
 def index():
     return send_from_directory(FRONTEND_DIR, "index.html")
@@ -111,4 +117,5 @@ def orders():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
 
