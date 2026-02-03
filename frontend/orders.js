@@ -2,7 +2,7 @@ const API = "http://127.0.0.1:5000";
 
 async function renderOrders() {
   try {
-    const res = await fetch(`${API}/orders`);
+    const res = await fetch(`/orders`);
     const orders = await res.json();
     const tbody = document.querySelector("#orderTable tbody");
     tbody.innerHTML = "";
@@ -27,5 +27,6 @@ async function renderOrders() {
 
   } catch(err){ console.error(err); }
 }
+
 
 document.addEventListener("DOMContentLoaded", renderOrders);
