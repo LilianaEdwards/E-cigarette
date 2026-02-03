@@ -58,7 +58,7 @@ async function renderOrdersAdmin() {
 // ----------------------
 async function renderStock() {
   try {
-    const res = await fetch(`${API}/products`);
+    const res = await fetch(`/products`);
     const products = await res.json();
     const tbody = document.querySelector("#stockTable tbody");
     tbody.innerHTML = "";
@@ -85,7 +85,7 @@ async function renderStock() {
 // ----------------------
 async function toggleStock(pid){
   try {
-    await fetch(`${API}/stock/toggle/${pid}`, {method:"POST"});
+    await fetch(`/stock/toggle/${pid}`, {method:"POST"});
     renderStock();
     renderProducts(); // refresh user products
   } catch(err){ console.error(err); }
@@ -96,7 +96,7 @@ async function toggleStock(pid){
 // ----------------------
 async function updateStatus(oid, status){
   try {
-    await fetch(`${API}/order/status/${oid}`, {
+    await fetch(`/order/status/${oid}`, {
       method:"POST",
       headers:{"Content-Type":"application/json"},
       body: JSON.stringify({status})
