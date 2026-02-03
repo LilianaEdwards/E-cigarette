@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Vape Cart</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body onload="renderCart()">
+
+<header>
+  <h1>VAPE LUXURY - Cart</h1>
+  <div class="nav-actions">
+    <a href="products.html" class="btn-outline">Back to Products</a>
+    <a href="orders.html" class="btn-outline">Order History</a>
+  </div>
+</header>
+
+<div class="container">
+  <table id="cartTable">
+    <thead>
+      <tr>
+        <th>Image</th>
+        <th>Name</th>
+        <th>Price</th>
+        <th>Qty</th>
+        <th>Total</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <div class="cart-summary">
+    <p>Total: <span id="cart-total">0</span> MMK</p>
+    <button class="btn gold" onclick="checkout()">Confirm Payment</button>
+  </div>
+</div>
+
+<script src="cart.js"></script>
+</body>
+</html>

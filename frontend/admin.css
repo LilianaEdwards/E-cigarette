@@ -1,0 +1,173 @@
+body {
+  background: #121212;
+  color: #f5d76e;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+h1 {
+  text-align: center;
+  color: #f5d76e;
+}
+.container {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 20px;
+}
+.buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+.buttons button {
+  padding: 10px 25px;
+  border: none;
+  border-radius: 8px;
+  background: #f5d76e;
+  color: #121212;
+  font-weight: bold;
+  cursor: pointer;
+}
+.buttons button:hover {
+  background: #ffd700;
+}
+.tables {
+  display: flex;
+  gap: 20px;
+}
+.table-container {
+  flex: 1;
+  background: #1e1e1e;
+  padding: 20px;
+  border-radius: 10px;
+  max-height: 80vh;
+  overflow-y: auto;
+  display: none;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th, td {
+  border-bottom: 1px solid #444;
+  padding: 10px;
+  text-align: left;
+  color: #f5d76e;
+}
+th {
+  background: #2c2c2c;
+  position: sticky;
+  top: 0;
+}
+.action-btn {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  margin: 2px;
+  cursor: pointer;
+}
+.stock-btn {
+  background: #f5d76e;
+  color: #121212;
+}
+.stock-btn:hover {
+  background: #ffd700;
+}
+.approve-btn {
+  background: #28a745;
+  color: #fff;
+}
+.approve-btn:hover {
+  background: #218838;
+}
+.reject-btn {
+  background: #dc3545;
+  color: #fff;
+}
+.reject-btn:hover {
+  background: #c82333;
+}
+/* ---------- TABLE ---------- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #0f0f0f;
+  color: #d4af37;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+th, td {
+  padding: 14px;
+  text-align: center;
+}
+
+tr {
+  transition: background 0.3s ease;
+}
+
+tr:hover {
+  background: rgba(212, 175, 55, 0.08);
+}
+
+/* ---------- STATUS COLORS ---------- */
+.status-in {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.status-out {
+  color: #ffb300;
+  font-weight: bold;
+}
+
+.order-pending {
+  color: #ffca28;
+}
+
+.order-approved {
+  color: #4caf50;
+}
+
+.order-rejected {
+  color: #ff5252;
+}
+
+/* ---------- BUTTONS ---------- */
+.btn {
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.btn.gold {
+  background: linear-gradient(135deg, #c9a14a, #ffd700);
+  color: #000;
+}
+
+.btn.success {
+  background: #2e7d32;
+  color: white;
+}
+
+.btn.danger {
+  background: #b71c1c;
+  color: white;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 12px rgba(212,175,55,0.8);
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 768px) {
+  table, tr, td {
+    font-size: 13px;
+  }
+}

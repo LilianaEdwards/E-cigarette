@@ -1,0 +1,5 @@
+const grid=document.getElementById('productGrid');
+const cartCount=document.getElementById('cartCount');
+function updateCartCount(){cartCount.innerText=cart.length}
+function addToCart(id){const p=products.find(x=>x.id===id);if(!p.available)return;cart.push(p);localStorage.setItem('cart',JSON.stringify(cart));updateCartCount();alert(p.name+' added to cart')}
+function renderProducts(){grid.innerHTML='';products.forEach(p=>{const card=document.createElement('div');card.className='product-card';if(!p.available)card.classList.add('out-of-stock');card.innerHTML=`<img src="${p.image}" alt="${p.name}"><h3>${p.name}</h3><p>${p.price} MMK</p><p>${p.available?'In Stock':'Out of Stock'}</p><button ${!p.available?'disabled':''} onclick="addToCart(${p.id})">Add to Cart</button>`;grid.appendChild(card)});updateCartCount()}
