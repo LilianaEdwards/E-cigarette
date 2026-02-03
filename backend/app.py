@@ -159,7 +159,13 @@ def checkout():
 @app.route("/orders", methods=["GET"])
 def get_orders():
     return jsonify(ORDERS)
-
+    
+@app.route("/orders", methods=["POST"])
+def orders():
+    data = request.json
+    # insert into database
+    return jsonify({"message": "Order placed successfully"})
+    
 @app.route("/order/status/<int:oid>", methods=["POST"])
 def update_order_status(oid):
     data = request.get_json()
@@ -176,6 +182,7 @@ def update_order_status(oid):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
