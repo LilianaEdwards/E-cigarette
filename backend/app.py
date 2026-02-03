@@ -158,7 +158,10 @@ def checkout():
 # -------------------------
 @app.route("/orders", methods=["GET"])
 def get_orders():
-    return jsonify(ORDERS)
+    conn = get_db_connection()
+    orders = conn.execute("SELECT * FROM orders ORDER BY id DESC").fetchall()
+    conn.close()
+    return jsonify([dict(o) for o in orders])
     
 @app.route("/orders", methods=["POST"])
 def orders():
@@ -193,6 +196,7 @@ def update_order_status(oid):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
