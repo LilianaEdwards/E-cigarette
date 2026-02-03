@@ -35,12 +35,12 @@ async function renderCart() {
 }
 
 async function removeFromCart(id){
-  await fetch(`${API}/cart/remove/${id}`, {method:"POST"});
+  await fetch(`/cart/remove/${id}`, {method:"POST"});
   renderCart();
 }
 
 async function checkout(){
-  const res = await fetch(`${API}/cart/checkout`, {method:"POST"});
+  const res = await fetch(`/cart/checkout`, {method:"POST"});
   const result = await res.json();
   if(result.success){
     alert("Order placed successfully!");
@@ -49,5 +49,6 @@ async function checkout(){
     alert(result.message);
   }
 }
+
 
 document.addEventListener("DOMContentLoaded", renderCart);
