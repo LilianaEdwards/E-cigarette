@@ -52,16 +52,17 @@ async function checkout(){
   const res = await fetch(`/orders`, { method: "POST" });
   const result = await res.json();
 
-  if(result.message){  
-    alert(result.message);
-    renderCart();      
-  } else {
-    alert("Something went wrong. Try again!");
-  }
+  if (result.message) {
+  alert("Order placed successfully!");
+  renderCart();
+} else {
+  alert(result.message || "Checkout failed");
+}
 }
 
 
 document.addEventListener("DOMContentLoaded", renderCart);
+
 
 
 
