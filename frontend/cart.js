@@ -44,12 +44,13 @@ async function checkout() {
   const data = await res.json();
   if (data.success) {
     alert("Payment successful!");
-    window.location.href = data.redirect; // go to order history
+    window.location.href = "/orders.html"; // go to order history
   } else {
     alert(data.message);
   }
 }
 document.addEventListener("DOMContentLoaded", renderCart);
+
 
 
 
