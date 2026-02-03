@@ -1,9 +1,14 @@
-from flask import Flask, jsonify, request
+from flask import jsonify, request
 from flask_cors import CORS
 from datetime import datetime
 import os
-app = Flask(__name__)
-CORS(app)
+from flask import Flask, send_from_directory
+
+app = Flask(__name__, static_folder="../frontend")
+
+@app.route("/")
+def home():
+    return send_from_directory(app.static_folder, "index.html")
 
 # -------------------------
 # PRODUCTS
@@ -119,5 +124,4 @@ def update_order_status(oid):
 # SERVER
 # -------------------------
 if __name__ == "__main__":
-    print("🔥 Vape backend running at http://127.0.0.1:5000")
     app.run(host="0.0.0.0", port=10000)
