@@ -50,6 +50,14 @@ def index():
 def frontend_files(filename):
     return send_from_directory(FRONTEND_DIR, filename)
 
+@app.route("/static/<path:filename>")
+def static_files(filename):
+    # Serve JS, CSS, images from frontend folder
+    file_path = os.path.join(FRONTEND_DIR, filename)
+    if not os.path.exists(file_path):
+        print("STATIC FILE NOT FOUND:", file_path)
+    return send_from_directory(FRONTEND_DIR, filename)
+
 # -------------------------
 # DATA (unchanged)
 # -------------------------
@@ -193,4 +201,5 @@ def update_order_status(oid):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
 
