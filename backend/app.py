@@ -23,7 +23,21 @@ def get_db_connection():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
+def init_db():
+    conn = get_db_connection()
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS orders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            items TEXT,
+            total REAL,
+            status TEXT,
+            date TEXT
+        )
+    """)
+    conn.commit()
+    conn.close()
 
+init_db()
 
 # -------------------
 # Frontend routes
@@ -153,6 +167,7 @@ def checkout():
         "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
 
+    try:
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -168,6 +183,11 @@ def checkout():
 
     conn.commit()
     conn.close()
+
+except Exception as e:
+    print("CHECKOUT ERROR:", e)
+    return jsonify({"success": False, "message": "Payment failed"}), 500
+
 
     ORDER_ID += 1
     CART = []
@@ -205,6 +225,7 @@ def update_order_status(oid):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
