@@ -89,53 +89,7 @@ PRODUCTS = [
   {"id":20,"name":"Vaporesso Target PM80","price":47000,"img":"https://tse3.mm.bing.net/th/id/OIP.95YrxNHx5DRNNEtLcLZh9QHaE8?pid=Api&P=0&h=220","stock":1}
 ]
 
-@app.route("/products", methods=["GET"])
-def products():
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
 
-        cursor.execute("SELECT * FROM products")
-        rows = cursor.fetchall()
-
-        conn.close()
-
-        products = [dict(row) for row in rows]
-
-        print("✅ /products API called, returned", len(products), "items")
-        return jsonify(products)
-
-    except Exception as e:
-        print("❌ ERROR in /products:", e)
-        return jsonify({"error": str(e)}), 500
-
-
-@app.route("/orders", methods=["POST"])
-def orders():
-    data = request.json
-
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-
-        cursor.execute(
-            "INSERT INTO orders (name, address, items, total) VALUES (?, ?, ?, ?)",
-            (
-                data.get("name"),
-                data.get("address"),
-                str(data.get("items")),
-                data.get("total")
-            )
-        )
-
-        conn.commit()
-        conn.close()
-
-        return jsonify({"message": "Order placed successfully"})
-
-    except Exception as e:
-        print("❌ ERROR in /orders:", e)
-        return jsonify({"error": str(e)}), 500
 
 CART = []  # temporary in-memory cart
 ORDERS = []
@@ -222,6 +176,7 @@ def update_order_status(oid):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
