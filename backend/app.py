@@ -1,128 +1,96 @@
-from flask import jsonify, request
-from flask_cors import CORS
-from datetime import datetime
 import os
-from flask import Flask, send_from_directory
+import sqlite3
+from flask import Flask, jsonify, request, send_from_directory
+from flask_cors import CORS
 
-app = Flask(__name__, static_folder="../frontend")
+# -------------------
+# App setup
+# -------------------
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FRONTEND_DIR = os.path.join(BASE_DIR, "../frontend")
+DB_PATH = os.path.join(BASE_DIR, "vape.db")
 
+app = Flask(__name__, static_folder=FRONTEND_DIR)
+CORS(app)
+
+
+# -------------------
+# Database helper
+# -------------------
+def get_db_connection():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+# -------------------
+# Frontend routes
+# -------------------
 @app.route("/")
-def home():
-    return send_from_directory(app.static_folder, "index.html")
+def index():
+    return send_from_directory(FRONTEND_DIR, "index.html")
 
-# -------------------------
-# PRODUCTS
-# -------------------------
-# --- SAMPLE PRODUCTS ---
-PRODUCTS = [
-    {"id":1,"name":"SMOK Nord 4","price":45000,"img":"https://tse1.mm.bing.net/th/id/OIP.eAarG4ndv1q8zFUr9ZlA6AHaE8?pid=Api&P=0&h=220","stock":1},
-  {"id":2,"name":"Vaporesso Luxe Q","price":50000,"img":"https://tse1.mm.bing.net/th/id/OIP.BgEJipmTVALDgm1jecFudgHaE8?pid=Api&P=0&h=220","stock":1},
-  {"id":3,"name":"GeekVape Aegis X","price":55000,"img":"https://tse1.mm.bing.net/th/id/OIP.nyS8r8hs8MXkJxsQJBoGDAHaHa?pid=Api&P=0&h=220","stock":1},
-  {"id":4,"name":"Voopoo Drag X Plus","price":48000,"img":"https://tse4.mm.bing.net/th/id/OIP.U_AjzdPvDLZFwmSiBHV2_QHaDW?pid=Api&P=0&h=220","stock":1},
-  {"id":5,"name":"Lost Vape Orion Q","price":47000,"img":"https://tse3.mm.bing.net/th/id/OIP.ftsop4xERXfGSr4vzcrlggHaER?pid=Api&P=0&h=220","stock":1},
-  {"id":6,"name":"SMOK RPM 40","price":46000,"img":"https://tse3.mm.bing.net/th/id/OIP.qUyElTTEMEVYL95XdTtGVgHaE8?pid=Api&P=0&h=220","stock":1},
-  {"id":7,"name":"Voopoo Vinci X","price":49000,"img":"https://tse4.mm.bing.net/th/id/OIP.RJpbqjOxu750Z7T5luGubQHaHa?pid=Api&P=0&h=220","stock":1},
-  {"id":8,"name":"Uwell Caliburn G","price":43000,"img":"https://tse3.mm.bing.net/th/id/OIP.8ZxmfGlgv5CGG0Q-IrrxyQHaHa?pid=Api&P=0&h=220","stock":1},
-  {"id":9,"name":"GeekVape Wenax K1","price":42000,"img":"https://tse4.mm.bing.net/th/id/OIP.PKeQxKdDAVIIYbq-m6f8_wHaDM?pid=Api&P=0&h=220","stock":1},
-  {"id":10,"name":"Aspire PockeX","price":44000,"img":"https://tse1.mm.bing.net/th/id/OIP.7Wda3vjDmS2R3ei5Hh4aHAHaHa?pid=Api&P=0&h=220","stock":1},
-  {"id":11,"name":"SMOK Mico","price":41000,"img":"https://tse2.mm.bing.net/th/id/OIP.01tcLskCz7Ddh0HkhzlsJAHaE8?pid=Api&P=0&h=220","stock":1},
-  {"id":12,"name":"Voopoo Argus Air","price":47000,"img":"https://tse1.mm.bing.net/th/id/OIP.Oz6no85rEAo6cm_tOmABSQHaE8?pid=Api&P=0&h=220","stock":1},
-  {"id":13,"name":"Vaporesso XROS","price":45000,"img":"https://tse1.mm.bing.net/th/id/OIP.s_q9f3l0bMvJlm473zsCFgHaHa?pid=Api&P=0&h=220","stock":1},
-  {"id":14,"name":"Lost Vape Lyra","price":46000,"img":"https://tse3.mm.bing.net/th/id/OIP.QFX43avQHJbYYq43AcWFTQHaE8?pid=Api&P=0&h=220","stock":1},
-  {"id":15,"name":"Uwell Caliburn Koko","price":43000,"img":"https://tse1.mm.bing.net/th/id/OIP.6_Y_XXe6tem0o6VYOYL0FQHaEK?pid=Api&P=0&h=220","stock":1},
-  {"id":16,"name":"Aspire Breeze 2","price":42000,"img":"https://tse2.mm.bing.net/th/id/OIP.yXbqg94KVAKx78NSF27L0wAAAA?pid=Api&P=0&h=220","stock":1},
-  {"id":17,"name":"SMOK Novo 4","price":44000,"img":"https://tse3.mm.bing.net/th/id/OIP.G9ppe5cuEZ2sHur5z6P5RgHaE0?pid=Api&P=0&h=220","stock":1},
-  {"id":18,"name":"Voopoo Drag S","price":48000,"img":"https://tse4.mm.bing.net/th/id/OIP.7odI_Fc3zUe_Gq9feFgPVAHaDe?pid=Api&P=0&h=220","stock":1},
-  {"id":19,"name":"GeekVape Aegis Nano","price":45000,"img":"https://tse2.mm.bing.net/th/id/OIP.EwLGypkqkuzLnXCqyjq_jwHaE7?pid=Api&P=0&h=220","stock":1},
-  {"id":20,"name":"Vaporesso Target PM80","price":47000,"img":"https://tse3.mm.bing.net/th/id/OIP.95YrxNHx5DRNNEtLcLZh9QHaE8?pid=Api&P=0&h=220","stock":1}
-]
 
-# -------------------------
-# CART & ORDERS
-# -------------------------
-CART = []  # temporary in-memory cart
-ORDERS = []
-ORDER_ID = 1
+@app.route("/<path:filename>")
+def frontend_files(filename):
+    return send_from_directory(FRONTEND_DIR, filename)
 
-# -------------------------
-# PRODUCTS
-# -------------------------
-@app.route("/products")
-def get_products():
-    return jsonify(PRODUCTS)
 
-@app.route("/stock/toggle/<int:pid>", methods=["POST"])
-def toggle_stock(pid):
-    for p in PRODUCTS:
-        if p["id"] == pid:
-            p["stock"] = 0 if p["stock"] == 1 else 1
-            return jsonify({"success": True, "id": pid, "stock": p["stock"]})
-    return jsonify({"success": False, "message": "Product not found"}),404
+# -------------------
+# API routes
+# -------------------
+@app.route("/products", methods=["GET"])
+def products():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
 
-# -------------------------
-# CART
-# -------------------------
-@app.route("/cart", methods=["GET"])
-def get_cart():
-    return jsonify(CART)
+        cursor.execute("SELECT * FROM products")
+        rows = cursor.fetchall()
 
-@app.route("/cart/add", methods=["POST"])
-def add_to_cart():
-    data = request.get_json()
-    product = next((p for p in PRODUCTS if p["id"]==data["id"]), None)
-    if not product or product["stock"]==0:
-        return jsonify({"success":False, "message":"Out of stock"}),400
-    existing = next((i for i in CART if i["id"]==data["id"]), None)
-    if existing:
-        existing["qty"] += data.get("qty",1)
-    else:
-        CART.append({"id": product["id"], "name": product["name"], "price": product["price"], "qty": data.get("qty",1), "img": product["img"]})
-    return jsonify({"success": True, "cart": CART})
+        conn.close()
 
-@app.route("/cart/remove/<int:pid>", methods=["POST"])
-def remove_from_cart(pid):
-    global CART
-    CART = [i for i in CART if i["id"] != pid]
-    return jsonify({"success": True})
+        products = [dict(row) for row in rows]
 
-@app.route("/cart/checkout", methods=["POST"])
-def checkout():
-    global CART, ORDER_ID
-    if not CART:
-        return jsonify({"success":False, "message":"Cart empty"})
-    order = {
-        "id": ORDER_ID,
-        "items": CART.copy(),
-        "total": sum(i["price"]*i["qty"] for i in CART),
-        "status": "PENDING",
-        "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    }
-    ORDERS.append(order)
-    ORDER_ID += 1
-    CART = []
-    return jsonify({"success":True, "order": order})
+        print("✅ /products API called, returned", len(products), "items")
+        return jsonify(products)
 
-# -------------------------
-# ORDERS (admin)
-# -------------------------
-@app.route("/orders", methods=["GET"])
-def get_orders():
-    return jsonify(ORDERS)
+    except Exception as e:
+        print("❌ ERROR in /products:", e)
+        return jsonify({"error": str(e)}), 500
 
-@app.route("/orders/status/<int:oid>", methods=["POST"])
-def update_order_status(oid):
-    data = request.get_json()
-    order = next((o for o in ORDERS if o["id"]==oid), None)
-    if not order:
-        return jsonify({"success":False,"message":"Order not found"}),404
-    if data.get("status") not in ["APPROVED","REJECTED"]:
-        return jsonify({"success":False,"message":"Invalid status"}),400
-    order["status"] = data["status"]
-    return jsonify({"success": True, "order": order})
 
-# -------------------------
-# SERVER
-# -------------------------
+@app.route("/orders", methods=["POST"])
+def orders():
+    data = request.json
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute(
+            "INSERT INTO orders (name, address, items, total) VALUES (?, ?, ?, ?)",
+            (
+                data.get("name"),
+                data.get("address"),
+                str(data.get("items")),
+                data.get("total")
+            )
+        )
+
+        conn.commit()
+        conn.close()
+
+        return jsonify({"message": "Order placed successfully"})
+
+    except Exception as e:
+        print("❌ ERROR in /orders:", e)
+        return jsonify({"error": str(e)}), 500
+
+
+# -------------------
+# Run app (IMPORTANT)
+# -------------------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
-
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
