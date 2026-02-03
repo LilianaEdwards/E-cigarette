@@ -39,16 +39,17 @@ async function removeFromCart(id){
   renderCart();
 }
 
-async function checkout() {
-  // Prepare order data
+async function checkout(){
+  // Make sure to send any necessary order info
   const orderData = {
-    name: document.getElementById("name").value,
-    address: document.getElementById("address").value,
-    items: cartItems,  // your array of cart items
-    total: cartTotal   // your calculated total
+    // Replace with actual fields you already have in your cart system
+    name: document.getElementById("name")?.value || "Guest",
+    address: document.getElementById("address")?.value || "N/A",
+    items: cartItems,  // your existing cartItems array
+    total: cartTotal   // your existing cart total
   };
 
-  const res = await fetch(`/orders`, {
+  const res = await fetch(`/orders`, {  
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(orderData)
@@ -56,9 +57,9 @@ async function checkout() {
 
   const result = await res.json();
 
-  if (result.message) {
+  if(result.message){  
     alert(result.message);
-    renderCart();
+    renderCart();      
   } else {
     alert("Something went wrong. Try again!");
   }
@@ -66,6 +67,7 @@ async function checkout() {
 
 
 document.addEventListener("DOMContentLoaded", renderCart);
+
 
 
 
