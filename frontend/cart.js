@@ -39,18 +39,33 @@ async function removeFromCart(id){
   renderCart();
 }
 
-async function checkout(){
-  const res = await fetch(`/cart/checkout`, {method:"POST"});
+async function checkout() {
+  // Prepare order data
+  const orderData = {
+    name: document.getElementById("name").value,
+    address: document.getElementById("address").value,
+    items: cartItems,  // your array of cart items
+    total: cartTotal   // your calculated total
+  };
+
+  const res = await fetch(`/orders`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(orderData)
+  });
+
   const result = await res.json();
-  if(result.success){
-    alert("Order placed successfully!");
+
+  if (result.message) {
+    alert(result.message);
     renderCart();
   } else {
-    alert(result.message);
+    alert("Something went wrong. Try again!");
   }
 }
 
 
 document.addEventListener("DOMContentLoaded", renderCart);
+
 
 
