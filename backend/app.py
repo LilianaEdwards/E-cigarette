@@ -26,15 +26,32 @@ def get_db_connection():
 # -------------------
 # Frontend routes
 # -------------------
+# -------------------
+# Frontend routes
+# -------------------
 @app.route("/")
 def index():
     return send_from_directory(FRONTEND_DIR, "index.html")
 
 
-@app.route("/<path:filename>")
-def frontend_files(filename):
-    return send_from_directory(FRONTEND_DIR, filename)
+@app.route("/products.html")
+def products_page():
+    return send_from_directory(FRONTEND_DIR, "products.html")
 
+
+@app.route("/cart.html")
+def cart_page():
+    return send_from_directory(FRONTEND_DIR, "cart.html")
+
+
+@app.route("/admin.html")
+def admin_page():
+    return send_from_directory(FRONTEND_DIR, "admin.html")
+
+
+@app.route("/orders.html")
+def orders_page():
+    return send_from_directory(FRONTEND_DIR, "orders.html")
 
 # -------------------
 # API routes
@@ -94,3 +111,4 @@ def orders():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
