@@ -49,12 +49,7 @@ async function checkout(){
     total: cartTotal   // your existing cart total
   };
 
-  const res = await fetch(`/orders`, {  
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(orderData)
-  });
-
+  const res = await fetch(`/orders`, { method: "POST" });
   const result = await res.json();
 
   if(result.message){  
@@ -67,6 +62,7 @@ async function checkout(){
 
 
 document.addEventListener("DOMContentLoaded", renderCart);
+
 
 
 
