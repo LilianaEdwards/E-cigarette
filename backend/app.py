@@ -12,7 +12,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FRONTEND_DIR = os.path.join(BASE_DIR, "../frontend")
 DB_PATH = os.path.join(BASE_DIR, "vape.db")
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder=FRONTEND_DIR)
 CORS(app)
 
 # -------------------
@@ -42,25 +42,26 @@ init_db()
 # -------------------
 # Frontend routes
 # -------------------
+@app.route("/<path:filename>")
+def serve_page(filename):
+    return send_from_directory(FRONTEND_DIR, filename)
+
 @app.route("/")
 def index():
     return send_from_directory(FRONTEND_DIR, "index.html")
 
-@app.route("/<path:filename>")
-def frontend_files(filename):
-    return send_from_directory(FRONTEND_DIR, filename)
-
 @app.route("/static/<path:filename>")
 def static_files(filename):
-    # Serve JS, CSS, images from frontend folder
     file_path = os.path.join(FRONTEND_DIR, filename)
     if not os.path.exists(file_path):
         print("STATIC FILE NOT FOUND:", file_path)
     return send_from_directory(FRONTEND_DIR, filename)
 
+
 # -------------------------
-# DATA (unchanged)
+# PRODUCTS
 # -------------------------
+# --- SAMPLE PRODUCTS ---
 PRODUCTS = [
     {"id":1,"name":"SMOK Nord 4","price":45000,"img":"https://tse1.mm.bing.net/th/id/OIP.eAarG4ndv1q8zFUr9ZlA6AHaE8?pid=Api&P=0&h=220","stock":1},
   {"id":2,"name":"Vaporesso Luxe Q","price":50000,"img":"https://tse1.mm.bing.net/th/id/OIP.BgEJipmTVALDgm1jecFudgHaE8?pid=Api&P=0&h=220","stock":1},
@@ -84,16 +85,31 @@ PRODUCTS = [
   {"id":20,"name":"Vaporesso Target PM80","price":47000 ,"img":"https://tse3.mm.bing.net/th/id/OIP.95YrxNHx5DRNNEtLcLZh9QHaE8?pid=Api&P=0&h=220","stock":1}
 ]
 
-
-CART = []
+# -------------------------
+# CART & ORDERS
+# -------------------------
+CART = []  # temporary in-memory cart
+ORDERS = []
+ORDER_ID = 1
 
 # -------------------------
-# API ROUTES
+# PRODUCTS
 # -------------------------
 @app.route("/products")
 def get_products():
     return jsonify(PRODUCTS)
 
+@app.route("/stock/toggle/<int:pid>", methods=["POST"])
+def toggle_stock(pid):
+    for p in PRODUCTS:
+        if p["id"] == pid:
+            p["stock"] = 0 if p["stock"] == 1 else 1
+            return jsonify({"success": True, "id": pid, "stock": p["stock"]})
+    return jsonify({"success": False, "message": "Product not found"}),404
+
+# -------------------------
+# CART
+# -------------------------
 @app.route("/cart", methods=["GET"])
 def get_cart():
     return jsonify(CART)
@@ -101,24 +117,15 @@ def get_cart():
 @app.route("/cart/add", methods=["POST"])
 def add_to_cart():
     data = request.get_json()
-    product = next((p for p in PRODUCTS if p["id"] == data["id"]), None)
-
-    if not product:
-        return jsonify({"success": False, "message": "Product not found"}), 400
-
-    existing = next((i for i in CART if i["id"] == data["id"]), None)
+    product = next((p for p in PRODUCTS if p["id"]==data["id"]), None)
+    if not product or product["stock"]==0:
+        return jsonify({"success":False, "message":"Out of stock"}),400
+    existing = next((i for i in CART if i["id"]==data["id"]), None)
     if existing:
-        existing["qty"] += data.get("qty", 1)
+        existing["qty"] += data.get("qty",1)
     else:
-        CART.append({
-            "id": product["id"],
-            "name": product["name"],
-            "price": product["price"],
-            "qty": data.get("qty", 1),
-            "img": product["img"]
-        })
-
-    return jsonify({"success": True})
+        CART.append({"id": product["id"], "name": product["name"], "price": product["price"], "qty": data.get("qty",1), "img": product["img"]})
+    return jsonify({"success": True, "cart": CART})
 
 @app.route("/cart/remove/<int:pid>", methods=["POST"])
 def remove_from_cart(pid):
@@ -126,80 +133,44 @@ def remove_from_cart(pid):
     CART = [i for i in CART if i["id"] != pid]
     return jsonify({"success": True})
 
-# -------------------------
-# CHECKOUT (SAFE + FIXED)
-# -------------------------
 @app.route("/cart/checkout", methods=["POST"])
 def checkout():
-    global CART
-
+    global CART, ORDER_ID
     if not CART:
-        return jsonify({"success": False, "message": "Cart is empty"}), 400
-
-    order_items = CART.copy()
-    total = sum(i["price"] * i["qty"] for i in order_items)
-    date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    try:
-        conn = get_db_connection()
-        conn.execute(
-            "INSERT INTO orders (items, total, status, date) VALUES (?, ?, ?, ?)",
-            (json.dumps(order_items), total, "PENDING", date)
-        )
-        conn.commit()
-        conn.close()
-    except Exception as e:
-        print("CHECKOUT ERROR:", e)
-        return jsonify({"success": False, "message": "Server error"}), 500
-
+        return jsonify({"success":False, "message":"Cart empty"})
+    order = {
+        "id": ORDER_ID,
+        "items": CART.copy(),
+        "total": sum(i["price"]*i["qty"] for i in CART),
+        "status": "PENDING",
+        "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+    ORDERS.append(order)
+    ORDER_ID += 1
     CART = []
-
-    return jsonify({
-        "success": True,
-        "redirect": "/orders.html"
-    })
+    return jsonify({"success":True, "order": order})
 
 # -------------------------
-# ORDER HISTORY / ADMIN
+# ORDERS (admin)
 # -------------------------
 @app.route("/orders", methods=["GET"])
 def get_orders():
-    conn = get_db_connection()
-    orders = conn.execute("SELECT * FROM orders ORDER BY id DESC").fetchall()
-    conn.close()
-
-    result = []
-    for o in orders:
-        result.append({
-            "id": o["id"],
-            "items": json.loads(o["items"]),
-            "total": o["total"],
-            "status": o["status"],
-            "date": o["date"]
-        })
-
-    return jsonify(result)
+    return jsonify(ORDERS)
 
 @app.route("/order/status/<int:oid>", methods=["POST"])
 def update_order_status(oid):
     data = request.get_json()
-    status = data.get("status")
+    order = next((o for o in ORDERS if o["id"]==oid), None)
+    if not order:
+        return jsonify({"success":False,"message":"Order not found"}),404
+    if data.get("status") not in ["APPROVED","REJECTED"]:
+        return jsonify({"success":False,"message":"Invalid status"}),400
+    order["status"] = data["status"]
+    return jsonify({"success": True, "order": order})
 
-    if status not in ["APPROVED", "REJECTED"]:
-        return jsonify({"success": False}), 400
-
-    conn = get_db_connection()
-    conn.execute("UPDATE orders SET status=? WHERE id=?", (status, oid))
-    conn.commit()
-    conn.close()
-
-    return jsonify({"success": True})
-
-# -------------------
-# Run
-# -------------------
+# -------------------------
+# SERVER
+# -------------------------
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
-
-
+    print("🔥 Vape backend running at http://127.0.0.1:5000")
+    app.run(debug=True)
