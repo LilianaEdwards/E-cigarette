@@ -137,40 +137,42 @@ def remove_from_cart(pid):
     global CART
     CART = [i for i in CART if i["id"] != pid]
     return jsonify({"success": True})
-
+    
 @app.route("/cart/checkout", methods=["POST"])
 def checkout():
     global CART, ORDER_ID
+
     if not CART:
-        return jsonify({"success":False, "message":"Cart empty"})
+        return jsonify({"success": False, "message": "Cart empty"})
+
     order = {
         "id": ORDER_ID,
         "items": CART.copy(),
-        "total": sum(i["price"]*i["qty"] for i in CART),
+        "total": sum(i["price"] * i["qty"] for i in CART),
         "status": "PENDING",
         "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
+
     conn = get_db_connection()
-cursor = conn.cursor()
+    cursor = conn.cursor()
 
-cursor.execute(
-    "INSERT INTO orders (items, total, status, date) VALUES (?, ?, ?, ?)",
-    (
-        json.dumps(order["items"]),
-        order["total"],
-        order["status"],
-        order["date"]
+    cursor.execute(
+        "INSERT INTO orders (items, total, status, date) VALUES (?, ?, ?, ?)",
+        (
+            json.dumps(order["items"]),
+            order["total"],
+            order["status"],
+            order["date"]
+        )
     )
-)
 
-conn.commit()
-conn.close()
+    conn.commit()
+    conn.close()
 
-ORDER_ID += 1
-CART = []
+    ORDER_ID += 1
+    CART = []
 
-return jsonify({"success": True, "order": order})
-
+    return jsonify({"success": True, "order": order})
 # -------------------------
 # ORDERS (admin)
 # -------------------------
@@ -203,6 +205,7 @@ def update_order_status(oid):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
