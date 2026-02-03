@@ -2,6 +2,8 @@ import os
 import sqlite3
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
+from datetime import datetime
+import json
 
 # -------------------
 # App setup
@@ -148,10 +150,26 @@ def checkout():
         "status": "PENDING",
         "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
-    ORDERS.append(order)
-    ORDER_ID += 1
-    CART = []
-    return jsonify({"success":True, "order": order})
+    conn = get_db_connection()
+cursor = conn.cursor()
+
+cursor.execute(
+    "INSERT INTO orders (items, total, status, date) VALUES (?, ?, ?, ?)",
+    (
+        json.dumps(order["items"]),
+        order["total"],
+        order["status"],
+        order["date"]
+    )
+)
+
+conn.commit()
+conn.close()
+
+ORDER_ID += 1
+CART = []
+
+return jsonify({"success": True, "order": order})
 
 # -------------------------
 # ORDERS (admin)
@@ -163,39 +181,29 @@ def get_orders():
     conn.close()
     return jsonify([dict(o) for o in orders])
     
-@app.route("/orders", methods=["POST"])
-def orders():
-    data = request.json
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO orders (id, date, items, total, status) VALUES (?, ?, ?, ?)",
-            (data.get("id"), data.get("date"), str(data.get("items")), data.get("total"), data.get("status"))
-        )
-        conn.commit()
-        conn.close()
-        return jsonify({"message": "Order placed successfully!"})
-    except Exception as e:
-        print("ERROR in /orders:", e)
-        return jsonify({"message": "Failed to place order"}), 500
-    
 @app.route("/order/status/<int:oid>", methods=["POST"])
 def update_order_status(oid):
     data = request.get_json()
-    order = next((o for o in ORDERS if o["id"]==oid), None)
-    if not order:
-        return jsonify({"success":False,"message":"Order not found"}),404
-    if data.get("status") not in ["APPROVED","REJECTED"]:
-        return jsonify({"success":False,"message":"Invalid status"}),400
-    order["status"] = data["status"]
-    return jsonify({"success": True, "order": order})
+    if data.get("status") not in ["APPROVED", "REJECTED"]:
+        return jsonify({"success": False, "message": "Invalid status"}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE orders SET status=? WHERE id=?",
+        (data["status"], oid)
+    )
+    conn.commit()
+    conn.close()
+
+    return jsonify({"success": True})
 # -------------------
 # Run app (IMPORTANT)
 # -------------------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
